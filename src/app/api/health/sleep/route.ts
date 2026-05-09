@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { analyzeAndAct } from '@/lib/proactive-engine'
 
 export async function GET(request: NextRequest) {
   try {
@@ -53,6 +54,14 @@ export async function POST(request: NextRequest) {
         notes: notes || null,
       },
     })
+
+    // 🔔 Proactive Engine: fire-and-forget after sleep logging
+    analyzeAndAct({
+      userId,
+      trigger: 'sleep_logged',
+      sleepDuration: parseFloat(duration),
+      sleepQuality: quality ? parseInt(quality, 10) : undefined,
+    }).catch(e => console.warn('Proactive engine (sleep) error:', e))
 
     return NextResponse.json({ sleep }, { status: 201 })
   } catch (error) {

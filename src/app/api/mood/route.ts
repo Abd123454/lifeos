@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { analyzeAndAct } from '@/lib/proactive-engine'
 
 export async function GET(request: NextRequest) {
   try {
@@ -48,6 +49,14 @@ export async function POST(request: NextRequest) {
         date: new Date(date),
       },
     })
+
+    // 🔔 Proactive Engine: fire-and-forget after mood logging
+    analyzeAndAct({
+      userId,
+      trigger: 'mood_logged',
+      moodValue: parseInt(value, 10),
+      moodLabel: label || undefined,
+    }).catch(e => console.warn('Proactive engine (mood) error:', e))
 
     return NextResponse.json({ mood }, { status: 201 })
   } catch (error) {

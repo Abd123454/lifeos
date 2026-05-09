@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { analyzeAndAct } from '@/lib/proactive-engine'
 
 export async function GET(request: NextRequest) {
   try {
@@ -67,6 +68,14 @@ export async function POST(request: NextRequest) {
         dueDate: dueDate ? new Date(dueDate) : null,
       },
     })
+
+    // 🔔 Proactive Engine: fire-and-forget after task creation
+    analyzeAndAct({
+      userId,
+      trigger: 'task_created',
+      taskTitle: title,
+      taskPriority: priority || 'medium',
+    }).catch(e => console.warn('Proactive engine (task) error:', e))
 
     return NextResponse.json({ task }, { status: 201 })
   } catch (error) {

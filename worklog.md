@@ -1293,3 +1293,55 @@ Files Created:
 Files Modified:
 - src/app/api/agent/chat/route.ts (added COMPASSIONATE ACTION PROTOCOL + semantic memory integration)
 - src/app/api/memory/search/route.ts (upgraded to use semantic-memory module)
+
+---
+Task ID: v5.2
+Agent: ml-engineer-ai-head
+Task: v5.2 — Ambient Awareness (Proactive Engine)
+
+Work Log:
+- Created src/lib/proactive-engine.ts — full Proactive Action Engine:
+  - analyzeAndAct(userId, triggerType, triggerData) function
+  - Triggered after mood POST, sleep POST, and task creation POST
+  - Loads user-profile.json correlations to detect patterns
+  - Mood ≤ 3 triggers: checks sleep→mood and anxiety→mood correlations
+  - Sleep ≤ 5hrs or quality ≤ 2 triggers: checks sleep→productivity and sleep→mood correlations
+  - Urgent task during vulnerable period: checks chronic sleep deprivation or anxiety
+  - Calls NVIDIA NIM API with proactive-specific system prompt ("watchman" mode)
+  - Stores AI-generated notification in DB as type PROACTIVE_INSIGHT
+  - 1-hour cooldown per trigger type per user to avoid notification spam
+  - Fire-and-forget execution (does not block original API response)
+- Modified src/app/api/agent/chat/route.ts:
+  - Added source: 'proactive_engine' mode
+  - When proactive_engine sends request, uses different system prompt
+  - Watchman prompt: "Generate a single notification expressing concern. No questions. Just gently alert and offer help."
+  - Supports Arabic and English based on user settings
+  - buildProactiveSystemPrompt() exported from proactive-engine.ts for reuse
+- Hooked proactive engine into 3 routes:
+  - POST /api/mood: calls analyzeAndAct with trigger 'mood_logged'
+  - POST /api/health/sleep: calls analyzeAndAct with trigger 'sleep_logged'
+  - POST /api/tasks: calls analyzeAndAct with trigger 'task_created'
+- Tested full closed loop:
+  - POST mood value=2 (sad) → proactive engine detected low mood → called NVIDIA NIM → notification created
+  - Notification: "I noticed you've been experiencing a low mood today and you often feel anxious. Given your sleep duration tends to be lower when you're struggling with habits, I recommend taking a few minutes to plan out your tasks and habits for tomorrow..."
+  - POST sleep 3.5hrs quality=1 → proactive engine detected poor sleep → second notification created
+  - Notification: "I noticed that you had a poor night's sleep, with only 3.5 hours of rest and a low sleep quality. Given your past correlation, this might affect your habit completion..."
+  - Both notifications appear in GET /api/agent/alerts as type PROACTIVE_INSIGHT
+- Lint passes cleanly
+- Dev server stable, all routes returning 200
+
+Stage Summary:
+- Proactive engine created and integrated into 3 data-entry routes
+- Agent can now generate notifications without user asking
+- Full closed loop verified: bad data → pattern detection → AI notification → DB storage → UI visibility
+- Cooldown mechanism prevents notification spam
+- All processing local — no data leaves the server
+
+Files Created:
+- src/lib/proactive-engine.ts (new — Proactive Action Engine)
+
+Files Modified:
+- src/app/api/agent/chat/route.ts (added proactive_engine source mode)
+- src/app/api/mood/route.ts (hooked proactive engine)
+- src/app/api/health/sleep/route.ts (hooked proactive engine)
+- src/app/api/tasks/route.ts (hooked proactive engine)

@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { buildInsightsPrompt } from '@/lib/user-model-engine'
 import { searchMemory, buildMemoryContext } from '@/lib/semantic-memory'
+import { buildProactiveSystemPrompt } from '@/lib/proactive-engine'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, message, history } = body
+    const { userId, message, history, source } = body
 
     if (!userId || !message) {
       return NextResponse.json(
@@ -23,6 +24,63 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // ── Proactive Engine Mode ──────────────────────────────────
+    // If the request comes from the proactive engine, use a different
+    // system prompt: the agent acts as a "watchman" that generates
+    // a single notification instead of a conversation.
+    if (source === 'proactive_engine') {
+      const { loadProfileFromFile } = await import('@/lib/user-model-engine')
+      const profile = loadProfileFromFile(userId)
+
+      let userLanguage = 'en'
+      try {
+        const langSetting = await db.settings.findUnique({
+          where: { userId_key: { userId, key: 'language' } },
+        })
+        if (langSetting?.value === 'ar') userLanguage = 'ar'
+      } catch { /* use default */ }
+
+      const proactiveSystemPrompt = buildProactiveSystemPrompt(userLanguage, profile)
+
+      const messages = [
+        { role: 'system', content: proactiveSystemPrompt },
+        { role: 'user', content: message },
+      ]
+
+      const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'meta/llama-3.1-8b-instruct',
+          messages,
+          temperature: 0.6,
+          max_tokens: 256,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Proactive agent API error:', response.status, errorText)
+        return NextResponse.json(
+          { error: 'AI service unavailable', details: errorText },
+          { status: 502 }
+        )
+      }
+
+      const data = await response.json()
+      const notificationMessage = data.choices?.[0]?.message?.content?.trim() || ''
+
+      return NextResponse.json({
+        message: notificationMessage,
+        source: 'proactive_engine',
+        usage: data.usage || null,
+      })
+    }
+
+    // ── Normal Chat Mode ───────────────────────────────────────
     // Load user personality insights from the user model engine
     const userInsights = buildInsightsPrompt(userId)
 
