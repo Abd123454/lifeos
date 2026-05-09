@@ -9,7 +9,7 @@ import {
   Target, Smile, Flag, BarChart3, Bell, Brain, TrendingUp, Clock,
   MessageCircle, Settings, Menu, X, Sun, Moon, Globe, LogOut,
   ChevronRight, Sparkles, Search, ChevronLeft, ChevronDown, User,
-  PanelLeftClose, PanelLeftOpen
+  PanelLeftClose, PanelLeftOpen, BrainCircuit
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from 'next-themes'
@@ -38,6 +38,7 @@ const MemoryPanel = dynamic(() => import('@/components/dashboard/memory-panel'),
 const ForecastPanel = dynamic(() => import('@/components/dashboard/forecast-panel'), { ssr: false, loading: () => <PanelSkeleton /> })
 const WatchPanel = dynamic(() => import('@/components/dashboard/watch-panel'), { ssr: false, loading: () => <PanelSkeleton /> })
 const ChatPanel = dynamic(() => import('@/components/dashboard/chat-panel'), { ssr: false, loading: () => <PanelSkeleton /> })
+const DigitalTwinPanel = dynamic(() => import('@/components/dashboard/digital-twin-panel'), { ssr: false, loading: () => <PanelSkeleton /> })
 
 function PanelSkeleton() {
   return (
@@ -77,6 +78,7 @@ const sidebarItems = [
   { id: 'forecast', icon: TrendingUp, labelKey: 'forecast' as const },
   { id: 'watch', icon: Clock, labelKey: 'watch' as const },
   { id: 'chat', icon: MessageCircle, labelKey: 'chat' as const },
+  { id: 'digitalTwin', icon: BrainCircuit, labelKey: 'digitalTwin' as const },
   { id: 'settings', icon: Settings, labelKey: 'settings' as const },
 ]
 
@@ -97,6 +99,7 @@ const panelMap: Record<string, React.ComponentType<any>> = {
   forecast: ForecastPanel,
   watch: WatchPanel,
   chat: ChatPanel,
+  digitalTwin: DigitalTwinPanel,
 }
 
 function formatDate(date: Date, language: 'en' | 'ar'): string {

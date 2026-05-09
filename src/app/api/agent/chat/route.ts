@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { buildInsightsPrompt } from '@/lib/user-model-engine'
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,7 +22,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Build system prompt with LifeOS context
+    // Load user personality insights from the user model engine
+    const userInsights = buildInsightsPrompt(userId)
+
+    // Build system prompt with LifeOS context + user personality insights
     const systemPrompt = `You are LifeOS Assistant, a helpful AI companion integrated into a personal life management system called LifeOS. 
 
 LifeOS helps users manage their tasks, health (sleep & mood), finances, habits, goals, contacts, journal, and memory.
@@ -33,7 +37,16 @@ Your role is to:
 - Be supportive, practical, and data-driven in your responses
 - Keep responses concise and actionable
 
-When referencing user data, be specific and helpful. Always encourage positive habits and balanced living.`
+When referencing user data, be specific and helpful. Always encourage positive habits and balanced living.
+
+${userInsights ? `
+---
+
+${userInsights}
+
+---
+` : ''}
+IMPORTANT: When the user mentions feeling tired, stressed, anxious, or overwhelmed, ALWAYS check if their behavioral data supports this (e.g., low sleep, high anxiety days) and proactively suggest adjustments. You know this user's patterns — use that knowledge naturally in conversation.`
 
     // Build message history
     const messages: { role: string; content: string }[] = [

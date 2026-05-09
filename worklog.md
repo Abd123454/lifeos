@@ -1173,3 +1173,78 @@ Priority Recommendations for Next Phase:
 - Add PDF/CSV export for reports
 - Add calendar integration (iCal feed)
 - Add PWA support with offline mode
+
+---
+Task ID: 9
+Agent: ml-engineer
+Task: Build Personal User Model (Digital Twin) — Analysis Engine, Context-Aware Agent, and Digital Twin Panel
+
+Work Log:
+- Created `src/lib/user-model-engine.ts` — the core Analysis Engine:
+  1. **Data Collection**: `collectDayRecords()` fetches last 30 days of mood, sleep, tasks, habits, and expenses data aggregated per day
+  2. **Correlation Analysis**: Uses Pearson r correlation coefficient across 8 metrics (avgMood, sleepHours, sleepQuality, tasksCompleted, habitCompletionRate, totalExpenses, anxiousCount, energeticCount) to find top-3 strongest correlations
+  3. **Personality Summary Generation**: Auto-generates a human-readable personality summary based on sleep patterns, mood trends, anxiety ratio, and top correlations — in English AND Arabic
+  4. **Productivity Forecast**: 7-day forecast based on day-of-week patterns + recent trend (up/down/stable) + correlation-based adjustments
+  5. **Persistence**: Saves profile to `data/user-profile-{userId}.json` with timestamp; loads from cache on GET requests
+  6. **Insights Prompt Builder**: `buildInsightsPrompt()` generates a `USER PERSONALITY INSIGHTS:` section for the AI agent's system prompt
+
+- Modified `src/app/api/agent/chat/route.ts` — Context-Aware Agent:
+  1. Imports `buildInsightsPrompt` from the user model engine
+  2. Loads user personality insights before each chat message
+  3. Injects `USER PERSONALITY INSIGHTS:` section into the system prompt with:
+     - Data period
+     - Personality summary
+     - Discovered patterns with strength indicators
+     - ⚠️ ALERT directives for strong patterns (e.g., sleep deprivation sensitivity, anxiety frequency)
+     - Average metrics summary
+  4. Added instruction: "When the user mentions feeling tired, stressed, anxious, or overwhelmed, ALWAYS check if their behavioral data supports this"
+
+- Created `src/app/api/user-model/route.ts` — API endpoint:
+  1. GET `/api/user-model?userId=xxx` — Returns cached profile (or null)
+  2. POST `/api/user-model` with `{userId}` — Runs full analysis pipeline and returns fresh profile
+
+- Created `src/components/dashboard/digital-twin-panel.tsx` — Digital Twin Panel:
+  1. **"What I Know About You"** card: Displays personality summary in a gradient-bordered card
+  2. **Strongest Discovered Patterns**: Top-3 correlations with metric icons, direction indicators, strength badges, and percentage badges
+  3. **Productivity Forecast**: 7-day grid with color-coded productivity predictions (emerald=high, amber=medium, rose=low), confidence percentages, and legend
+  4. **Average Metrics**: 4-tile grid showing mood, sleep, tasks/day, habit completion with gradient text
+  5. **Anxiety/Energy ratios**: Displayed below metrics if >0
+  6. **Re-analyze button**: Gradient purple button with spinning animation during analysis
+  7. **Insufficient data state**: Shows "I need 7 days" message with progress bar when dataDays < 7
+  8. **Last analysis timestamp**: Footer showing when profile was last generated
+  9. Full RTL/Arabic support throughout
+  10. framer-motion stagger animations on all sections
+
+- Added `digitalTwin` to i18n translations (en: "Digital Twin", ar: "التوأم الرقمي")
+- Added `BrainCircuit` icon import to page.tsx
+- Added Digital Twin tab to sidebar (between AI Chat and Settings)
+- Added `DigitalTwinPanel` to lazy-loaded panel map
+
+Test Results:
+- POST `/api/user-model` with userId: ✅ Returns full profile with 29 data days, 3 correlations, 7-day forecast
+- GET `/api/user-model?userId=xxx`: ✅ Returns cached profile (8ms)
+- Profile persistence: ✅ Saved to `data/user-profile-cmowvffnu0000q9lf93j1zu47.json`
+- Discovered real correlations:
+  1. Sleep duration ↔ Habit completion (r=-0.525, moderate, negative) — "When sleep is low, habits drop 9%"
+  2. Sleep duration ↔ Sleep quality (r=0.477, moderate, positive) — "More sleep = 49% better quality"
+  3. Anxiety ↔ Energy (r=-0.426, moderate, negative) — "Anxiety reduces energy by 86%"
+- Panel loads in dashboard without errors: ✅
+- Lint passes cleanly: ✅
+
+Files Created:
+- src/lib/user-model-engine.ts (new — Analysis Engine, 380 lines)
+- src/app/api/user-model/route.ts (new — API endpoint)
+- src/components/dashboard/digital-twin-panel.tsx (new — Digital Twin Panel, 350 lines)
+
+Files Modified:
+- src/app/api/agent/chat/route.ts (added user personality insights injection)
+- src/lib/i18n.ts (added digitalTwin translation)
+- src/app/page.tsx (added BrainCircuit icon, DigitalTwinPanel import, sidebar item, panel map entry)
+
+Stage Summary:
+- Phase 1 (Analysis Engine): ✅ Complete — Collects data, finds correlations, generates forecasts
+- Phase 2 (Context-Aware Agent): ✅ Complete — User insights injected into AI chat system prompt
+- Phase 3 (Digital Twin Panel): ✅ Complete — New panel with personality summary, patterns, forecast
+- All processing is local — no data sent externally
+- Insufficient data handling: Shows "need 7 days" message with progress bar
+- Arabic/English bilingual support throughout

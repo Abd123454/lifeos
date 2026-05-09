@@ -1,0 +1,97 @@
+{
+  "userId": "cmowvffnu0000q9lf93j1zu47",
+  "generatedAt": "2026-05-09T08:51:08.327Z",
+  "dataDays": 29,
+  "topCorrelations": [
+    {
+      "metricA": "sleepHours",
+      "metricB": "habitCompletionRate",
+      "coefficient": -0.525,
+      "direction": "negative",
+      "strength": "moderate",
+      "description": "Your sleep duration moderately decreases with your habit completion (53% correlation). When your sleep duration is low, your habit completion is 9% lower than when it's high.",
+      "descriptionAr": "مدة النوم بشكل متوسط ينخفض مع إنجاز العادات (ارتباط 53%). عندما يكون مدة النوم منخفضًا، يكون إنجاز العادات 9% أقل مقارنةً بأنه مرتفع."
+    },
+    {
+      "metricA": "sleepHours",
+      "metricB": "sleepQuality",
+      "coefficient": 0.477,
+      "direction": "positive",
+      "strength": "moderate",
+      "description": "Your sleep duration moderately increases with your sleep quality (48% correlation). When your sleep duration is high, your sleep quality is 49% higher than when it's low.",
+      "descriptionAr": "مدة النوم بشكل متوسط يرتفع مع جودة النوم (ارتباط 48%). عندما يكون مدة النوم مرتفعًا، يكون جودة النوم 49% أعلى مقارنةً بأنه منخفض."
+    },
+    {
+      "metricA": "anxiousCount",
+      "metricB": "energeticCount",
+      "coefficient": -0.426,
+      "direction": "negative",
+      "strength": "moderate",
+      "description": "Your anxiety level moderately decreases with your energy level (43% correlation). When your anxiety level is low, your energy level is 86% lower than when it's high.",
+      "descriptionAr": "مستوى القلق بشكل متوسط ينخفض مع مستوى الطاقة (ارتباط 43%). عندما يكون مستوى القلق منخفضًا، يكون مستوى الطاقة 86% أقل مقارنةً بأنه مرتفع."
+    }
+  ],
+  "forecast": [
+    {
+      "day": "Sunday",
+      "predictedProductivity": 22,
+      "confidence": 0.9,
+      "reasoning": "Based on your Sunday pattern and recent up trend. Good sleep is key to your productivity. Anxiety may reduce your output.",
+      "reasoningAr": "بناءً على نمط يوم الأحد والاتجاه الصاعد مؤخرًا. النوم الجيد مفتاح إنتاجيتك. القلق قد يقلل من إنجازك."
+    },
+    {
+      "day": "Monday",
+      "predictedProductivity": 63,
+      "confidence": 0.9,
+      "reasoning": "Based on your Monday pattern and recent up trend. Good sleep is key to your productivity. Anxiety may reduce your output.",
+      "reasoningAr": "بناءً على نمط يوم الاثنين والاتجاه الصاعد مؤخرًا. النوم الجيد مفتاح إنتاجيتك. القلق قد يقلل من إنجازك."
+    },
+    {
+      "day": "Tuesday",
+      "predictedProductivity": 22,
+      "confidence": 0.9,
+      "reasoning": "Based on your Tuesday pattern and recent up trend. Good sleep is key to your productivity. Anxiety may reduce your output.",
+      "reasoningAr": "بناءً على نمط يوم الثلاثاء والاتجاه الصاعد مؤخرًا. النوم الجيد مفتاح إنتاجيتك. القلق قد يقلل من إنجازك."
+    },
+    {
+      "day": "Wednesday",
+      "predictedProductivity": 64,
+      "confidence": 0.9,
+      "reasoning": "Based on your Wednesday pattern and recent up trend. Good sleep is key to your productivity. Anxiety may reduce your output.",
+      "reasoningAr": "بناءً على نمط يوم الأربعاء والاتجاه الصاعد مؤخرًا. النوم الجيد مفتاح إنتاجيتك. القلق قد يقلل من إنجازك."
+    },
+    {
+      "day": "Thursday",
+      "predictedProductivity": 67,
+      "confidence": 0.9,
+      "reasoning": "Based on your Thursday pattern and recent up trend. Good sleep is key to your productivity. Anxiety may reduce your output.",
+      "reasoningAr": "بناءً على نمط يوم الخميس والاتجاه الصاعد مؤخرًا. النوم الجيد مفتاح إنتاجيتك. القلق قد يقلل من إنجازك."
+    },
+    {
+      "day": "Friday",
+      "predictedProductivity": 26,
+      "confidence": 0.9,
+      "reasoning": "Based on your Friday pattern and recent up trend. Good sleep is key to your productivity. Anxiety may reduce your output.",
+      "reasoningAr": "بناءً على نمط يوم الجمعة والاتجاه الصاعد مؤخرًا. النوم الجيد مفتاح إنتاجيتك. القلق قد يقلل من إنجازك."
+    },
+    {
+      "day": "Saturday",
+      "predictedProductivity": 23,
+      "confidence": 0.9,
+      "reasoning": "Based on your Saturday pattern and recent up trend. Good sleep is key to your productivity. Anxiety may reduce your output.",
+      "reasoningAr": "بناءً على نمط يوم السبت والاتجاه الصاعد مؤخرًا. النوم الجيد مفتاح إنتاجيتك. القلق قد يقلل من إنجازك."
+    }
+  ],
+  "personalitySummary": "You prioritize rest, averaging 7.7 hours of sleep per night. Your mood is moderate, with some fluctuations. Anxiety appears on 34% of your days. Your sleep duration moderately decreases with your habit completion (53% correlation). When your sleep duration is low, your habit completion is 9% lower than when it's high. Your sleep duration moderately increases with your sleep quality (48% correlation). When your sleep duration is high, your sleep quality is 49% higher than when it's low.",
+  "personalitySummaryAr": "أنت تهتم بالراحة، بمتوسط 7.7 ساعات نوم في الليلة. مزاجك متوسط، مع بعض التقلبات. يظهر القلق في 34% من أيامك. مدة النوم بشكل متوسط ينخفض مع إنجاز العادات (ارتباط 53%). عندما يكون مدة النوم منخفضًا، يكون إنجاز العادات 9% أقل مقارنةً بأنه مرتفع. مدة النوم بشكل متوسط يرتفع مع جودة النوم (ارتباط 48%). عندما يكون مدة النوم مرتفعًا، يكون جودة النوم 49% أعلى مقارنةً بأنه منخفض.",
+  "metrics": {
+    "avgMood": 5.8,
+    "avgSleepHours": 7.7,
+    "avgSleepQuality": 3.5,
+    "avgTaskCompletionRate": 0.4,
+    "avgHabitCompletionRate": 0.08,
+    "avgDailyExpense": 762.83,
+    "anxiousDayRatio": 0.34,
+    "energeticDayRatio": 0.28
+  }
+}
