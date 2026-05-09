@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { searchMemory, type SearchFilters } from '@/lib/semantic-memory'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, query } = body
+    const { userId, query, filters } = body
 
     if (!userId || !query) {
       return NextResponse.json(
@@ -13,19 +13,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Simple text search on key and value fields
-    const nodes = await db.memoryNode.findMany({
-      where: {
-        userId,
-        OR: [
-          { key: { contains: query } },
-          { value: { contains: query } },
-        ],
-      },
-      orderBy: { confidence: 'desc' },
-    })
+    // Use the new semantic memory search with optional manual filters
+    const searchFilters: SearchFilters | undefined = filters ? {
+      sleepThreshold: filters.sleepThreshold,
+      anxietyBoost: filters.anxietyBoost,
+      energyBoost: filters.energyBoost,
+    } : undefined
 
-    return NextResponse.json({ nodes, query })
+    const result = await searchMemory(userId, query, searchFilters)
+
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Memory search POST error:', error)
     return NextResponse.json({ error: 'Failed to search memory nodes' }, { status: 500 })

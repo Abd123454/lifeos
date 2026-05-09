@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { buildInsightsPrompt } from '@/lib/user-model-engine'
+import { searchMemory, buildMemoryContext } from '@/lib/semantic-memory'
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,7 +26,18 @@ export async function POST(request: NextRequest) {
     // Load user personality insights from the user model engine
     const userInsights = buildInsightsPrompt(userId)
 
+    // Perform contextual memory search — this uses user-profile.json
+    // correlations to boost relevant memories automatically
+    let memoryContext = ''
+    try {
+      const searchResponse = await searchMemory(userId, message)
+      memoryContext = buildMemoryContext(searchResponse)
+    } catch (e) {
+      console.warn('Semantic memory search failed, continuing without it:', e)
+    }
+
     // Build system prompt with LifeOS context + user personality insights
+    // + COMPASSIONATE ACTION PROTOCOL
     const systemPrompt = `You are LifeOS Assistant, a helpful AI companion integrated into a personal life management system called LifeOS. 
 
 LifeOS helps users manage their tasks, health (sleep & mood), finances, habits, goals, contacts, journal, and memory.
@@ -43,6 +55,34 @@ ${userInsights ? `
 ---
 
 ${userInsights}
+
+---
+` : ''}
+COMPASSIONATE ACTION PROTOCOL:
+
+You are not just a data analyst. You are a compassionate companion who understands this user deeply through their behavioral patterns.
+
+RULES:
+1. If you detect that the user is asking about a problem (fatigue, anxiety, stress, pressure, feeling down) AND you have historical data that explains why, **do NOT just tell them the cause directly in a clinical way.** Instead, retrieve a specific memory from the semantic fabric and present it to them with warmth and empathy.
+
+2. Always frame your observations as caring curiosity, not diagnosis. Say things like "I notice..." or "It seems like..." rather than "Your data shows that..."
+
+3. When suggesting a solution, ground it in a real past experience. Reference a specific date or event when a similar situation occurred and what helped. This makes your advice feel personal, not generic.
+
+4. If the user's profile reveals they are sleep-sensitive (sleep patterns strongly affect their mood/productivity), and they mention fatigue — gently guide them toward rest strategies rather than productivity hacks.
+
+5. If the user's profile reveals anxiety patterns, be extra gentle. Avoid overwhelming them with multiple suggestions. Offer ONE clear, actionable step first, then ask if they want more.
+
+6. EXAMPLE of desired behavior:
+   - User: "I'm so exhausted today and I don't know why."
+   - You: "I notice you're feeling really drained today. When this happened before — like on October 15th — I saw that you'd had a rough night with only 5 hours of sleep, and canceling your afternoon meetings helped you recover. Would you like to look at your schedule today and see if we can carve out some rest time?"
+
+7. If you have relevant memories from the semantic fabric (provided below), USE them. They contain real events and patterns from this user's life. Weave them naturally into your response.
+
+${memoryContext ? `
+---
+
+${memoryContext}
 
 ---
 ` : ''}

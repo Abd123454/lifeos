@@ -1248,3 +1248,48 @@ Stage Summary:
 - All processing is local — no data sent externally
 - Insufficient data handling: Shows "need 7 days" message with progress bar
 - Arabic/English bilingual support throughout
+
+---
+Task ID: v5.1
+Agent: ml-engineer-ai-head
+Task: v5.1 — Final Integration of Memory and Understanding (Contextual Recall)
+
+Work Log:
+- Read existing architecture: agent chat route, memory search route, user-model-engine, Prisma schema, user profile data
+- Created src/lib/semantic-memory.ts — full Contextual Recall Engine with:
+  - Query intent detection (Arabic + English keywords for fatigue, anxiety, energy, sleep, mood, productivity, pain, overwhelm)
+  - Profile → Filter mapping: loads user-profile.json correlations and derives contextual search filters (sleepThreshold, anxietyBoost, energyBoost)
+  - Relevance scoring: combines text match + confidence + contextual filter boosts + cross-intent boosts
+  - searchMemory(userId, query, filters?) function: auto-derives filters from profile, merges with optional manual filters, returns weighted sorted results
+  - buildMemoryContext() helper: formats top results for injection into agent system prompt
+- Modified src/app/api/agent/chat/route.ts — added COMPASSIONATE ACTION PROTOCOL:
+  - Integrates semantic memory search before every chat response
+  - Adds "COMPASSIONATE ACTION PROTOCOL" section after "USER PERSONALITY INSIGHTS"
+  - 7 strict rules: empathetic framing, grounding in real past events, gentle guidance, one-step-at-a-time for anxiety, specific behavioral examples
+  - Agent transformed from "data analyst" to "compassionate companion"
+- Updated src/app/api/memory/search/route.ts to use new semantic-memory module (searchMemory with filters)
+- Tested full chain:
+  - POST /api/user-model → rebuilt profile (29 days, 3 correlations found)
+  - POST /api/agent/chat with "أشعر بالإرهاق الشديد اليوم ولا أعرف لماذا." → Agent responded with empathetic reference to specific past event (Oct 15, 5hrs sleep), suggested canceling afternoon meetings, asked if user wants to review schedule together
+  - POST /api/agent/chat with "I feel so anxious and overwhelmed today" → Agent referenced The Hive coworking event, suggested walking outside and breaking tasks down, offered one clear actionable step
+- Lint passes cleanly
+- Dev server stable, all routes returning 200
+
+Stage Summary:
+- Semantic Memory engine created with contextual recall (profile-driven filter boosting)
+- COMPASSIONATE ACTION PROTOCOL added to agent system prompt
+- Memory search API upgraded to use contextual search
+- Agent responses now demonstrably different: empathetic, grounded in real memories, collaborative
+- All processing local — no data leaves the server
+
+Test Results:
+1. Arabic fatigue query: Agent referenced specific past event, linked to sleep data, suggested concrete action ✅
+2. English anxiety query: Agent recalled specific location/event, suggested practical steps, offered one clear action ✅
+3. User model rebuild: 29 days, 3 correlations, all working ✅
+
+Files Created:
+- src/lib/semantic-memory.ts (new — Contextual Recall Engine)
+
+Files Modified:
+- src/app/api/agent/chat/route.ts (added COMPASSIONATE ACTION PROTOCOL + semantic memory integration)
+- src/app/api/memory/search/route.ts (upgraded to use semantic-memory module)
