@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -17,8 +17,8 @@ model User {
   theme        String   @default("system")
   timezone     String   @default("Asia/Hebron")
   encryptedKey String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   tasks        Task[]
   sleeps       Sleep[]
@@ -33,114 +33,130 @@ model User {
   notifications Notification[]
   settings     Settings[]
   userProfile  UserProfile?
+
+  @@map("users")
 }
 
 model Task {
   id          String    @id @default(cuid())
-  userId      String
+  userId      String    @map("user_id")
   title       String
   description String?
   status      String    @default("pending")
   priority    String    @default("medium")
   category    String?
-  dueDate     DateTime?
-  completedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  dueDate     DateTime? @map("due_date")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tasks")
 }
 
 model Sleep {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String   @map("user_id")
   date      DateTime
   bedtime   String
-  wakeTime  String
+  wakeTime  String   @map("wake_time")
   duration  Float
   quality   Int      @default(3)
   notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sleeps")
 }
 
 model Expense {
   id          String   @id @default(cuid())
-  userId      String
+  userId      String   @map("user_id")
   amount      Float
   category    String
   description String?
   date        DateTime
   type        String   @default("expense")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("expenses")
 }
 
 model Habit {
   id          String   @id @default(cuid())
-  userId      String
+  userId      String   @map("user_id")
   name        String
   description String?
   icon        String   @default("🎯")
   color       String   @default("#10b981")
   frequency   String   @default("daily")
   target      Int      @default(1)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   habitLogs HabitLog[]
+
+  @@map("habits")
 }
 
 model HabitLog {
   id        String   @id @default(cuid())
-  habitId   String
-  userId    String
+  habitId   String   @map("habit_id")
+  userId    String   @map("user_id")
   date      DateTime
   value     Int      @default(1)
   notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("habit_logs")
 }
 
 model Mood {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String   @map("user_id")
   value     Int
   label     String?
   notes     String?
   date      DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("moods")
 }
 
 model Goal {
   id          String    @id @default(cuid())
-  userId      String
+  userId      String    @map("user_id")
   title       String
   description String?
   category    String?
   progress    Int       @default(0)
-  targetDate  DateTime?
+  targetDate  DateTime? @map("target_date")
   status      String    @default("active")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("goals")
 }
 
 model Contact {
   id          String    @id @default(cuid())
-  userId      String
+  userId      String    @map("user_id")
   name        String
   email       String?
   phone       String?
@@ -148,99 +164,114 @@ model Contact {
   role        String?
   tags        String?
   notes       String?
-  lastContact DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  lastContact DateTime? @map("last_contact")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("contacts")
 }
 
 model Journal {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String   @map("user_id")
   title     String?
   content   String
   mood      String?
   tags      String?
   date      DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("journals")
 }
 
 model MemoryNode {
   id         String   @id @default(cuid())
-  userId     String
+  userId     String   @map("user_id")
   type       String
   key        String
   value      String
   metadata   String?
   confidence Float    @default(1.0)
   source     String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("memory_nodes")
 }
 
 model Notification {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String   @map("user_id")
   type      String
   title     String
   message   String
   read      Boolean  @default(false)
-  actionUrl String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  actionUrl String?  @map("action_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }
 
 model Settings {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String   @map("user_id")
   key       String
   value     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, key])
+  @@map("settings")
 }
 
 model Briefing {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String   @map("user_id")
   content   String
   date      DateTime
   type      String   @default("daily")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("briefings")
 }
 
 model ChatMessage {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String   @map("user_id")
   role      String
   content   String
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("chat_messages")
 }
 
 model UserProfile {
   id                 String   @id @default(cuid())
-  userId             String   @unique
-  generatedAt        DateTime @default(now())
-  dataDays           Int      @default(0)
-  topCorrelations    String   @default("[]")
+  userId             String   @unique @map("user_id")
+  generatedAt        DateTime @default(now()) @map("generated_at")
+  dataDays           Int      @default(0) @map("data_days")
+  topCorrelations    String   @default("[]") @map("top_correlations")
   forecast           String   @default("[]")
-  personalitySummary  String   @default("")
-  personalitySummaryAr String @default("")
+  personalitySummary  String   @default("") @map("personality_summary")
+  personalitySummaryAr String @default("") @map("personality_summary_ar")
   metrics            String   @default("{}")
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
 }

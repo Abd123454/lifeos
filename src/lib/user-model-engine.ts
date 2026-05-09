@@ -9,8 +9,6 @@
  */
 
 import { db } from '@/lib/db'
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
-import { join } from 'path'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -552,43 +550,65 @@ export async function buildUserProfile(userId: string): Promise<UserProfile> {
     metrics,
   }
 
-  // 7. Persist to local JSON file
-  saveProfileToFile(profile)
+  // 7. Persist to database (works on Vercel serverless)
+  await saveProfileToDB(profile)
 
   return profile
 }
 
 /* ------------------------------------------------------------------ */
-/*  File I/O                                                           */
+/*  Database Storage (replaces file I/O for Vercel compatibility)      */
 /* ------------------------------------------------------------------ */
 
-function getProfilePath(userId: string): string {
-  return join(process.cwd(), 'data', `user-profile-${userId}.json`)
+export async function saveProfileToDB(profile: UserProfile): Promise<void> {
+  const data = {
+    generatedAt: new Date(profile.generatedAt),
+    dataDays: profile.dataDays,
+    topCorrelations: JSON.stringify(profile.topCorrelations),
+    forecast: JSON.stringify(profile.forecast),
+    personalitySummary: profile.personalitySummary,
+    personalitySummaryAr: profile.personalitySummaryAr,
+    metrics: JSON.stringify(profile.metrics),
+  }
+
+  await db.userProfile.upsert({
+    where: { userId: profile.userId },
+    update: data,
+    create: { userId: profile.userId, ...data },
+  })
 }
 
-export function saveProfileToFile(profile: UserProfile): void {
-  const dir = join(process.cwd(), 'data')
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
-  writeFileSync(getProfilePath(profile.userId), JSON.stringify(profile, null, 2), 'utf-8')
-}
-
-export function loadProfileFromFile(userId: string): UserProfile | null {
+export async function loadProfileFromDB(userId: string): Promise<UserProfile | null> {
   try {
-    const path = getProfilePath(userId)
-    if (!existsSync(path)) return null
-    const raw = readFileSync(path, 'utf-8')
-    return JSON.parse(raw) as UserProfile
+    const row = await db.userProfile.findUnique({ where: { userId } })
+    if (!row) return null
+
+    return {
+      userId: row.userId,
+      generatedAt: row.generatedAt.toISOString(),
+      dataDays: row.dataDays,
+      topCorrelations: JSON.parse(row.topCorrelations),
+      forecast: JSON.parse(row.forecast),
+      personalitySummary: row.personalitySummary,
+      personalitySummaryAr: row.personalitySummaryAr,
+      metrics: JSON.parse(row.metrics),
+    }
   } catch {
     return null
   }
 }
 
+// Legacy aliases for backward compatibility (now async)
+export const saveProfileToFile = saveProfileToDB
+export const loadProfileFromFile = loadProfileFromDB
+
 /**
  * Build a system-prompt section from the user profile.
  * Returns an empty string if no profile is available.
+ * Now async because profile is loaded from database.
  */
-export function buildInsightsPrompt(userId: string): string {
-  const profile = loadProfileFromFile(userId)
+export async function buildInsightsPrompt(userId: string): Promise<string> {
+  const profile = await loadProfileFromDB(userId)
   if (!profile || profile.dataDays < 7) return ''
 
   const lines: string[] = [

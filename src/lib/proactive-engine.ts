@@ -229,8 +229,8 @@ export async function analyzeAndAct(ctx: ProactiveContext): Promise<ProactiveRes
       return { triggered: false, reason: 'On cooldown (1hr between proactive notifications)' }
     }
 
-    // 2. Load user profile
-    const profile = loadProfileFromFile(userId)
+    // 2. Load user profile (now async — DB-backed for Vercel)
+    const profile = await loadProfileFromFile(userId)
 
     // 3. Don't act if profile is too young
     if (profile && profile.dataDays < 7) {

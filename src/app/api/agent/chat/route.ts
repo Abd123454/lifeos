@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     // a single notification instead of a conversation.
     if (source === 'proactive_engine') {
       const { loadProfileFromFile } = await import('@/lib/user-model-engine')
-      const profile = loadProfileFromFile(userId)
+      const profile = await loadProfileFromFile(userId)
 
       let userLanguage = 'en'
       try {
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // ── Normal Chat Mode ───────────────────────────────────────
     // Load user personality insights from the user model engine
-    const userInsights = buildInsightsPrompt(userId)
+    const userInsights = await buildInsightsPrompt(userId)
 
     // Perform contextual memory search — this uses user-profile.json
     // correlations to boost relevant memories automatically

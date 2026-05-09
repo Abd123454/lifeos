@@ -310,8 +310,8 @@ export async function searchMemory(
   // 1. Detect query intent
   const intent = detectQueryIntent(query)
 
-  // 2. Load user profile
-  const profile = loadProfileFromFile(userId)
+  // 2. Load user profile (now async — DB-backed for Vercel)
+  const profile = await loadProfileFromFile(userId)
 
   // 3. Derive contextual filters from profile + intent
   const autoFilters = deriveFiltersFromProfile(profile, intent)

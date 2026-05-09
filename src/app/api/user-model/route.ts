@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'userId is required' }, { status: 400 })
   }
 
-  const profile = loadProfileFromFile(userId)
+  const profile = await loadProfileFromFile(userId)
   return NextResponse.json({ profile })
 }
 
